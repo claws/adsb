@@ -1,0 +1,9 @@
+-r requirements.txt
+autopep8
+coverage
+mypy
+pycodestyle
+sphinx
+twine
+wheel
+asynctest

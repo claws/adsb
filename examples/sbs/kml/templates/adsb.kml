@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Folder>
+    <name>ADSB Network Link</name>
+    <visibility>1</visibility>
+    <open>1</open>
+    <description>ADSB Live Data</description>
+    <LookAt>
+      <latitude>{{latitude}}</latitude>
+      <longitude>{{longitude}}</longitude>
+      <range>{{range}}</range>
+    </LookAt>
+    <NetworkLink>
+      <name>ADSB</name>
+      <visibility>1</visibility>
+      <open>1</open>
+      <description>ADSB data auto-updates every {{update_interval}} sec.</description>
+      <Link>
+        <href>{{kml_update_url}}</href>
+        <refreshMode>onInterval</refreshMode>
+        <refreshInterval>{{update_interval}}</refreshInterval>
+      </Link>
+      <flyToView>1</flyToView>
+    </NetworkLink>
+  </Folder>
+</kml>
