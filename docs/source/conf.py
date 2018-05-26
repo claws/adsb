@@ -148,7 +148,7 @@ def run_apidoc(_):
         cmd_path = os.path.abspath(
             os.path.join(sys.prefix, 'bin', 'sphinx-apidoc'))
     subprocess.check_call(
-        [cmd_path, '--no-toc', '-o', 'api', '../src/adsb', '--force'])
+        [cmd_path, '--no-toc', '-o', 'api', '../../src/adsb', '--force'])
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)
