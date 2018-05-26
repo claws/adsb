@@ -19,6 +19,7 @@
 #
 import os
 import re
+import subprocess
 import sys
 from sphinx import apidoc
 # sys.path.insert(0, os.path.abspath('.'))
@@ -141,8 +142,13 @@ html_sidebars = {
 
 def run_apidoc(_):
     output_path = os.path.join(repo_root, 'docs', 'source', 'api')
-    apidoc.main(['--force', '-o', output_path, pkg_root])
-
+    cmd_path = 'sphinx-apidoc'
+    if hasattr(sys, 'real_prefix'):  # Check to see if we are in a virtualenv
+        # If we are, assemble the path manually
+        cmd_path = os.path.abspath(
+            os.path.join(sys.prefix, 'bin', 'sphinx-apidoc'))
+    subprocess.check_call(
+        [cmd_path, '--no-toc', '-o', 'api', '../src/aioprometheus', '--force'])
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)
