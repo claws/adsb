@@ -2,8 +2,6 @@
 # Most actions assume it is operating in a virtual environment where the
 # python command links to the appropriate virtual environment Python.
 
-STYLE_EXCLUDE_LIST := git status --porcelain --ignored | grep "!!" | grep ".py$$" | cut -d " " -f2 | tr "\n" ","
-STYLE_MAX_LINE_LENGTH := 160
 VENVS_DIR := $(HOME)/.venvs
 VENV_DIR := $(VENVS_DIR)/adsb
 
@@ -62,19 +60,16 @@ check-coverage:
 	@cd docs/source/coverage; mv index.html coverage.html
 
 
-# help: check-style                    - perform pep8 check
+# help: check-style                    - check code formatting
 .PHONY: check-style
 check-style:
-	@pycodestyle --exclude=.git,docs,$(shell $(STYLE_EXCLUDE_LIST)) --ignore=E309,E402 --max-line-length=$(STYLE_MAX_LINE_LENGTH) src/adsb tests
+	@black --check src/adsb tests setup.py
 
 
-# help: fix-style                      - perform check with autopep8 fixes
-.PHONY: fix-style
-fix-style:
-	@# If there are no files to fix then autopep8 typically returns an error
-	@# because it did not get passed any files to work on. Use xargs -r to
-	@# avoid this problem.
-	@pycodestyle --exclude=.git,docs,$(shell $(STYLE_EXCLUDE_LIST)) --ignore=E309,E402 --max-line-length=$(STYLE_MAX_LINE_LENGTH) src/adsb tests -q  | xargs -r autopep8 -i --max-line-length=$(STYLE_MAX_LINE_LENGTH)
+# help: style                          - apply code formatting
+.PHONY: style
+style:
+	@black src/adsb tests setup.py
 
 
 # help: check-types                    - check type hint annotations

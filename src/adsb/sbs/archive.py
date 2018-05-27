@@ -1,4 +1,4 @@
-'''
+"""
 This module implements a SBS message archive writing and reading capability.
 It can be used to save messages to file so that they can be replayed or
 analysed at a later time.
@@ -7,7 +7,7 @@ An archive is simply a recording of the message lines that were received
 from the server. Each message line item is prefixed with a timestamp and
 terminated with a new line. By associating a timestamp with the message in the
 log file the messages can then be replayed at different rates.
-'''
+"""
 
 import datetime
 import logging
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class RotatingArchiveFileHandler(object):
-    '''
+    """
     Base class for handlers that record to disk files and rotate log files
     at a certain point.
 
@@ -28,17 +28,12 @@ class RotatingArchiveFileHandler(object):
     Shamelessly duplicated from the Python standard library logging module
     with deep class hierarchy condensed and stripped of logger record
     specifics.
-    '''
+    """
 
-    terminator = '\r\n'  # Use the same delimiter as used on SBS stream
+    terminator = "\r\n"  # Use the same delimiter as used on SBS stream
 
-    def __init__(self,
-                 filename,
-                 mode='a',
-                 maxBytes=0,
-                 backupCount=0,
-                 encoding=None):
-        '''
+    def __init__(self, filename, mode="a", maxBytes=0, backupCount=0, encoding=None):
+        """
         Open the specified file and use it as the stream for logging.
 
         By default, the file grows indefinitely. You can specify particular
@@ -57,14 +52,14 @@ class RotatingArchiveFileHandler(object):
         respectively.
 
         If maxBytes is zero, rollover never occurs.
-        '''
+        """
         # If rotation/rollover is wanted, it doesn't make sense to use another
         # mode. If for example 'w' were specified, then if there were multiple
         # runs of the calling application, the logs from previous runs would be
         # lost if the 'w' is respected, because the log file would be truncated
         # on each run.
         if maxBytes > 0:
-            mode = 'a'
+            mode = "a"
         self.baseFilename = os.path.abspath(filename)
         self.mode = mode
         self.encoding = encoding
@@ -75,16 +70,16 @@ class RotatingArchiveFileHandler(object):
         self.backupCount = backupCount
 
     def flush(self):
-        '''
+        """
         Flushes the stream.
-        '''
+        """
         if self.stream and hasattr(self.stream, "flush"):
             self.stream.flush()
 
     def close(self):
-        '''
+        """
         Closes the stream.
-        '''
+        """
         if self.stream:
             self.flush()
             if hasattr(self.stream, "close"):
@@ -92,14 +87,14 @@ class RotatingArchiveFileHandler(object):
             self.stream = None
 
     def _open(self):
-        '''
+        """
         Open the base file with the (original) mode and encoding.
         Return the resulting stream.
-        '''
+        """
         return open(self.baseFilename, self.mode, encoding=self.encoding)
 
     def emit(self, record: str):
-        '''
+        """
         Emit a record to the log file, catering for rollover as described
         in doRollover().
 
@@ -111,10 +106,9 @@ class RotatingArchiveFileHandler(object):
         A timestamp, in UTC, is added to facilitate replaying a session log
         at a rate faster than real time while keeping the relative spacing
         between the messages.
-        '''
+        """
         if self.stream is None:
-            logger.warning(
-                'Attempted to write to archive but no stream exists')
+            logger.warning("Attempted to write to archive but no stream exists")
             return
 
         try:
@@ -123,13 +117,13 @@ class RotatingArchiveFileHandler(object):
             stream = self.stream
             msg = record
             timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
-            stream.write(f'{timestamp.isoformat()},{msg}{self.terminator}')
+            stream.write(f"{timestamp.isoformat()},{msg}{self.terminator}")
             self.flush()
         except Exception:
-            logger.exception('Problem storing message to session archive')
+            logger.exception("Problem storing message to session archive")
 
     def rotation_filename(self, default_name):
-        '''
+        """
         Modify the filename of a log file when rotating.
 
         This is provided so that a custom filename can be provided.
@@ -140,7 +134,7 @@ class RotatingArchiveFileHandler(object):
         is returned unchanged.
 
         :param default_name: The default name for the log file.
-        '''
+        """
         if not callable(self.namer):
             result = default_name
         else:
@@ -148,7 +142,7 @@ class RotatingArchiveFileHandler(object):
         return result
 
     def rotate(self, source, dest):
-        '''
+        """
         When rotating, rotate the current log.
 
         The default implementation calls the 'rotator' attribute of the
@@ -160,7 +154,7 @@ class RotatingArchiveFileHandler(object):
                        filename, e.g. 'test.log'
         :param dest:   The destination filename. This is normally
                        what the source is rotated to, e.g. 'test.log.1'.
-        '''
+        """
         if not callable(self.rotator):
             if os.path.exists(source):
                 os.rename(source, dest)
@@ -168,17 +162,16 @@ class RotatingArchiveFileHandler(object):
             self.rotator(source, dest)
 
     def doRollover(self):
-        '''
+        """
         Do a rollover, as described in __init__().
-        '''
+        """
         if self.stream:
             self.stream.close()
             self.stream = None
         if self.backupCount > 0:
             for i in range(self.backupCount - 1, 0, -1):
                 sfn = self.rotation_filename("%s.%d" % (self.baseFilename, i))
-                dfn = self.rotation_filename("%s.%d" % (self.baseFilename,
-                                                        i + 1))
+                dfn = self.rotation_filename("%s.%d" % (self.baseFilename, i + 1))
                 if os.path.exists(sfn):
                     if os.path.exists(dfn):
                         os.remove(dfn)
@@ -190,15 +183,15 @@ class RotatingArchiveFileHandler(object):
         self.stream = self._open()
 
     def shouldRollover(self, record):
-        '''
+        """
         Determine if rollover should occur.
 
         Basically, see if the supplied record would cause the file to exceed
         the size limit we have.
-        '''
-        if self.stream is None:                 # delay was set...
+        """
+        if self.stream is None:  # delay was set...
             self.stream = self._open()
-        if self.maxBytes > 0:                   # are we rolling over?
+        if self.maxBytes > 0:  # are we rolling over?
             msg = "{}{}".format(record, self.terminator)
             self.stream.seek(0, 2)  # due to non-posix-compliant Windows feature
             if self.stream.tell() + len(msg) >= self.maxBytes:
@@ -207,15 +200,15 @@ class RotatingArchiveFileHandler(object):
 
 
 def read_archive(archive_file):
-    '''
+    """
     This generator yields lines from a session archive log file.
     Each line is returned as a 2-tuple containing a UTC timestamp
     and the SBS format message bytes.
 
     :param archive_file: An archive file
-    '''
+    """
     if os.path.exists(archive_file):
-        with open(archive_file, 'rb') as f:
+        with open(archive_file, "rb") as f:
             for line in f:
-                timestamp, msg_bytes = line.split(b',', 1)
+                timestamp, msg_bytes = line.split(b",", 1)
                 yield timestamp.decode(), msg_bytes

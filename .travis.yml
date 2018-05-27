@@ -8,8 +8,12 @@ git:
   depth: 1
 before_install:
   - pip install pip --upgrade
+  - pip install asynctest
+  - echo "$TRAVIS_PYTHON_VERSION"
+  - if [[ "$TRAVIS_PYTHON_VERSION" != "pypy3" ]]; then pip install black; fi
 install:
   - make dist
   - pip install dist/adsb-*.whl
 script:
+  - if [[ "$TRAVIS_PYTHON_VERSION" != "pypy3" ]]; then make check-style; fi
   - make test
