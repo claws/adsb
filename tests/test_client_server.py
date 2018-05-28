@@ -1,6 +1,6 @@
-'''
+"""
 This unit test checks client and server interactions.
-'''
+"""
 
 import asyncio
 import asynctest
@@ -17,15 +17,16 @@ from adsb.sbs.message import SBSMessage
 
 
 MESSAGES_LOG_FILE = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 'messages-log.txt')
+    os.path.abspath(os.path.dirname(__file__)), "messages-log.txt"
+)
 
-SYS_TMP_DIR = os.environ.get('TMPDIR', tempfile.gettempdir())
+SYS_TMP_DIR = os.environ.get("TMPDIR", tempfile.gettempdir())
 
 
 class TestSBSClientServerTestCase(asynctest.TestCase):
 
     async def setUp(self):
-        self.server = Server(host='localhost', port=0, loop=self.loop)
+        self.server = Server(host="localhost", port=0, loop=self.loop)
         await self.server.start()
         self.server_port = self.server.port
 
@@ -35,9 +36,9 @@ class TestSBSClientServerTestCase(asynctest.TestCase):
     async def test_message_interface(self):
 
         mock_handler = unittest.mock.Mock()
-        client = Client(host='localhost',
-                        port=self.server.port,
-                        on_msg_callback=mock_handler)
+        client = Client(
+            host="localhost", port=self.server.port, on_msg_callback=mock_handler
+        )
         await client.start()
 
         # allow time for server to register connection
@@ -46,10 +47,10 @@ class TestSBSClientServerTestCase(asynctest.TestCase):
 
         sent = 0
         received = 0
-        with open(MESSAGES_LOG_FILE, 'rb') as fd:
+        with open(MESSAGES_LOG_FILE, "rb") as fd:
             for line in fd:
-                timestamp, msg_str = line.split(b',', 1)
-                assert msg_str.endswith(b'\r\n')
+                timestamp, msg_str = line.split(b",", 1)
+                assert msg_str.endswith(b"\r\n")
                 self.server.send_message(msg_str)
                 sent += 1
 
@@ -67,22 +68,23 @@ class TestSBSClientServerTestCase(asynctest.TestCase):
         await client.stop()
 
     async def test_message_archiving(self):
-        ''' Check client message archiving '''
+        """ Check client message archiving """
         # Check that an error is raise when no record file is provided
         with self.assertRaises(Exception) as cm:
-            client = Client(host='localhost',
-                            port=self.server.port,
-                            record=True)
+            client = Client(host="localhost", port=self.server.port, record=True)
         self.assertIn(
-            "Record is enabled but no record_file is specified", str(cm.exception))
+            "Record is enabled but no record_file is specified", str(cm.exception)
+        )
 
         tempdir = tempfile.mkdtemp(dir=SYS_TMP_DIR)
-        record_file = os.path.join(tempdir, 'messages.txt')
+        record_file = os.path.join(tempdir, "messages.txt")
         try:
-            client = Client(host='localhost',
-                            port=self.server.port,
-                            record=True,
-                            record_file=record_file)
+            client = Client(
+                host="localhost",
+                port=self.server.port,
+                record=True,
+                record_file=record_file,
+            )
             await client.start()
 
             # allow time for server to register connection
@@ -91,10 +93,10 @@ class TestSBSClientServerTestCase(asynctest.TestCase):
 
             sent = 0
             received = 0
-            with open(MESSAGES_LOG_FILE, 'rb') as fd:
+            with open(MESSAGES_LOG_FILE, "rb") as fd:
                 for line in fd:
-                    timestamp, msg_str = line.split(b',', 1)
-                    assert msg_str.endswith(b'\r\n')
+                    timestamp, msg_str = line.split(b",", 1)
+                    assert msg_str.endswith(b"\r\n")
                     self.server.send_message(msg_str)
                     sent += 1
 
